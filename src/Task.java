@@ -1,13 +1,14 @@
 import java.time.LocalDate;
 public class Task {
 
+    //Variable initilization
+
     private String taskName;
     private String category;
     private LocalDate dueDate;
     private String priority;
 
-
-
+    //Constructor
     public Task()
     {
         taskName="";
@@ -15,7 +16,7 @@ public class Task {
         dueDate=LocalDate.of(1, 1, 1);
         priority="";
     }
-
+    //Constructor with input Parameter
     public Task(String taskName,String category,LocalDate dueDate,String priority)
     {
         this.taskName=taskName;
@@ -62,7 +63,8 @@ public class Task {
     {
         this.priority=priority;
     }
-
+    
+    //Formated toString
     public String toString()
     {
         return ("This is your current task:\nName\t\tCategory\t\tPriority\t\tDue Date\n"+getTaskName()+"\t\t"+getCategory()+"\t\t\t"+getPriority()+"\t\t\t"+getDueDate());

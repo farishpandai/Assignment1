@@ -8,6 +8,7 @@ public class TaskValidator {
         
         try
         {
+            //Checks for error and throws an exception
             if (task.getTaskName().isEmpty()) 
             {
                 throw new IllegalArgumentException("Task cannot be empty");
@@ -31,14 +32,11 @@ public class TaskValidator {
             }
             
         }
-
+        //Catches the exception and display the appropriate error
         catch(IllegalArgumentException e)
         {
             return "Error:" + e.getMessage();
         }
-
-
-
     }
     
 }
