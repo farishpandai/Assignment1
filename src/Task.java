@@ -64,6 +64,7 @@ public class Task {
         this.priority=priority;
     }
     
+    @Override
     //Formated toString
     public String toString()
     {
