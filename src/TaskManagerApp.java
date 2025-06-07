@@ -140,10 +140,8 @@ public class TaskManagerApp extends Application {
 
         //Add exit and event on click for exit
         Button exitButton = new Button("Exit");
-        Button saveButton = new Button("Save");
         exitButton.setPrefWidth(100);
-        saveButton.setPrefWidth(100);
-        HBox exitBox = new HBox(500,saveButton,exitButton);
+        HBox exitBox = new HBox(500,exitButton);
         exitBox.setAlignment(Pos.CENTER);
 
         
