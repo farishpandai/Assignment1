@@ -1,5 +1,9 @@
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 import javafx.application.Application;
 import javafx.geometry.Pos;
@@ -15,6 +19,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
+import javafx.stage.FileChooser;
+import javafx.scene.control.TextInputDialog;
 
 public class TaskManagerApp extends Application {
     //uses gridpane to make a table
@@ -23,6 +29,10 @@ public class TaskManagerApp extends Application {
     private int currentRow = 1; // start at row 1 to leave room for headers
 
     public TaskValidator taskValidator = new TaskValidator();
+
+    private boolean fileCheckState = false;
+
+    
     
    
 
@@ -30,8 +40,24 @@ public class TaskManagerApp extends Application {
         launch(args);
     }
 
+     private Scene buildIntroScene(Button startButton, Button loadButton) {
+    Label introLabel = new Label("Welcome to Task Manager!");
+    introLabel.setFont(Font.font("Book Antiqua", FontWeight.BOLD, 32));
+    VBox introLayout = new VBox(30, introLabel, startButton, loadButton);
+    introLayout.setAlignment(Pos.CENTER);
+    return new Scene(introLayout, 800, 600);
+}
+
     @Override
     public void start(Stage primaryStage) {
+        TextReadAndWrite readWrite = new TextReadAndWrite();
+
+        // --- INTRO SCENE ---
+        Button newTasksButton = new Button("New Tasks");
+        Button loadButton = new Button("Load");
+        Scene introScene = buildIntroScene(newTasksButton, loadButton);
+
+       
 
         //For title of the app
         Label header = new Label("Task Manager");   
@@ -77,6 +103,8 @@ public class TaskManagerApp extends Application {
         taskGrid.setGridLinesVisible(true);
         taskGrid.setAlignment(Pos.CENTER);
 
+       
+
 
         // Add Task button
         Button submitButton = new Button("Add Task");
@@ -101,6 +129,7 @@ public class TaskManagerApp extends Application {
                     taskGrid.add(pri, 3, currentRow);
                     currentRow++;
                     taskValidator.showSuccessMessage("Task successfully added!");
+                    readWrite.writeToFile(newTask);
                     taskName.clear();
                     category.clear();
                     dueDate.clear();
@@ -111,8 +140,10 @@ public class TaskManagerApp extends Application {
 
         //Add exit and event on click for exit
         Button exitButton = new Button("Exit");
+        Button saveButton = new Button("Save");
         exitButton.setPrefWidth(100);
-        HBox exitBox = new HBox(exitButton);
+        saveButton.setPrefWidth(100);
+        HBox exitBox = new HBox(500,saveButton,exitButton);
         exitBox.setAlignment(Pos.CENTER);
 
         
@@ -128,8 +159,81 @@ public class TaskManagerApp extends Application {
         root.setStyle("-fx-background-color: #FAF0E6;");
         Scene scene = new Scene(root, 800, 600);
 
+        Scene mainScene = scene;//main Task Manager scene
+
+        //Switch Scenes
+        newTasksButton.setOnAction(e -> {
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("New Task File");
+            dialog.setHeaderText("Create New Task File");
+            dialog.setContentText("Enter a name for your new task file:");
+
+            dialog.showAndWait().ifPresent(filename -> {
+                if (!filename.trim().isEmpty()) {
+                    boolean created = readWrite.checkForFile(filename.trim());
+                    if (!created) {
+                        // File created set writing
+                        readWrite.setFile(new File(filename.trim() + ".txt"));
+                        fileCheckState = true;
+                        primaryStage.setScene(mainScene);
+                    } else {
+                        // File exists
+                        readWrite.setFile(new File(filename.trim() + ".txt"));
+                        fileCheckState = true;
+                        primaryStage.setScene(mainScene);
+                    }
+                } else {
+                  
+                }
+            });
+        });
+        
+
+        loadButton.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Open Task File");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
+            fileChooser.setInitialDirectory(new File(System.getProperty("user.dir")));
+            File selectedFile = fileChooser.showOpenDialog(primaryStage);
+            if (selectedFile != null) {
+                readWrite.setFile(selectedFile); 
+                fileCheckState = true;
+                primaryStage.setScene(mainScene);
+                // Load tasks here
+                ArrayList<String[]> savedTasks = readWrite.readFromSave();
+                if (savedTasks != null) {
+                    for (String[] taskFields : savedTasks) {
+                        if (taskFields.length >= 4) {
+                            Label name = new Label(taskFields[0].trim());
+                            name.setFont(subLabelFont);
+                            Label cat = new Label(taskFields[1].trim());
+                            cat.setFont(subLabelFont);
+                            Label date1 = new Label(taskFields[2].trim());
+                            date1.setFont(subLabelFont);
+                            Label pri = new Label(taskFields[3].trim());
+                            pri.setFont(subLabelFont);
+
+                            taskGrid.add(name, 0, currentRow);
+                            taskGrid.add(cat, 1, currentRow);
+                            taskGrid.add(date1, 2, currentRow);
+                            taskGrid.add(pri, 3, currentRow);
+                            currentRow++;
+                        }
+                    }
+                }
+            }
+        });
+
+        //Show Intro Scene First
         primaryStage.setTitle("Task Manager");
-        primaryStage.setScene(scene);
+        primaryStage.setScene(introScene);
         primaryStage.show();
+        
+       
+    
+
+        
     }
+
+   
 }
