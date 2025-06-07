@@ -48,6 +48,7 @@ public class TextReadAndWrite {
             writeTo.write(task.getCategory()+";");
             writeTo.write(task.getDueDate()+";");
             writeTo.write(task.getPriority()+";");
+            writeTo.write(System.getProperty("line.separator"));
             writeTo.close();
         }
         catch(IOException e)
