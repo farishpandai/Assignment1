@@ -1,127 +1,115 @@
-/**
- *
- * @author LENOVO
- */
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 import java.util.Optional;
 import java.util.ArrayList;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.Alert.AlertType;
 
+/**
+ * This class handles all our input validation.
+ * also handles all the pop-up messages (errors, success, confirmations).
+ */
 public class TaskValidator {
-    private Alert msg;
+    private Alert msg; // the pop-up box object
     private ArrayList<Task> taskList;
 
     public TaskValidator(ArrayList<Task> taskList) {
-        msg = new Alert(AlertType.NONE);
+        msg = new Alert(Alert.AlertType.NONE);
         this.taskList = taskList;
-
     }
     
-    //Show error message involved
-    public void showErrorMessage(String errMessage)
-    {
-        msg.setAlertType(AlertType.ERROR);
+    // shows a big red error pop-up.
+    public void showErrorMessage(String errMessage) {
+        msg.setAlertType(Alert.AlertType.ERROR);
         msg.setTitle("Invalid Input");
         msg.setContentText(errMessage);
         msg.show();
     }
 
-    //Confirm with the user if they want to exit
-    public void confirmExit()
-    {
-        msg.setAlertType(AlertType.CONFIRMATION);
+    // "Are you sure you wanna exit?" pop-up.
+    public void confirmExit() {
+        msg.setAlertType(Alert.AlertType.CONFIRMATION);
         msg.setTitle("Confirmation Dialog");
         msg.setContentText("Are you sure to exit?");
         Optional<ButtonType> result = msg.showAndWait();
-         if (result.get() == ButtonType.OK) {
+        if (result.isPresent() && result.get() == ButtonType.OK) {
             System.exit(0);
         }
-
-
     }
 
-    //Pop up showing successful task added
-     public void showSuccessMessage(String message) {
-        
-      
+    // shows "Success!" message.
+    public void showSuccessMessage(String message) {
         msg.setAlertType(Alert.AlertType.INFORMATION);  
         msg.setTitle("Success Message"); 
         msg.setContentText(message); 
         msg.show(); 
     }
      
-    
-    public boolean validateTask(Task task, int ignoreIndex)
-    {
-        try
-        {
-            if (task.getTaskName().isEmpty()) 
-            {
-                throw new IllegalArgumentException("Task cannot be empty");
+    /**
+     * runs all the checks on a task before we add or update it.
+     * this method calls the specific validation logic in the subclasses too .
+     */
+    public boolean validateTask(Task task, int ignoreIndex) {
+        try {
+            // -- General Checks for ALL task types ---
+            if (task.getTaskName().isEmpty()) {
+                throw new IllegalArgumentException("Task name cannot be empty.");
             }
             if (isDuplicateTask(task.getTaskName(), ignoreIndex)) {
-                return false;
+                return false; // error message is shown inside the method
             }
-            if (task.getCategory().isEmpty()) 
-            {
-                throw new IllegalArgumentException("You must choose the category");
+            if (task.getCategory() == null || task.getCategory().isEmpty()) {
+                throw new IllegalArgumentException("You must choose a category.");
             } 
-            if (task.getDueDate()==null)
-                throw new IllegalArgumentException("You must choose the due date");
+            if (task.getDueDate() == null) {
+                throw new IllegalArgumentException("You must choose a due date.");
+            }
+            if (task.getDueDate().isBefore(LocalDate.now())) {
+                throw new IllegalArgumentException("The due date cannot be in the past.");
+            } 
+            if (task.getPriority() == null || task.getPriority().isEmpty()) {
+                throw new IllegalArgumentException("You must choose a priority.");
+            }
             
-            if (task.getDueDate().isBefore(LocalDate.now())) 
-            {
-                throw new IllegalArgumentException("The Date cannot be before the current date");
-            } 
-            if (task.getPriority().isEmpty()) 
-            {
-                throw new IllegalArgumentException("You must choose the priority");
+            // if the task is a worktask, run its special validation rules.
+            if (task instanceof WorkTask) {
+                ((WorkTask) task).validate();
             }
-            else {
-                return true;
-            }
-        }
-        catch(IllegalArgumentException e)
-        {
-            showErrorMessage(e.getMessage());
+
+            
+            return true; 
+            
+        } catch (IllegalArgumentException e) {
+            showErrorMessage(e.getMessage()); // catch any error and show it
             return false;
         }
     }
     
-    //Pop up to confirm deletion
-    public boolean confirmDelete()
-    {
-        msg.setAlertType(AlertType.CONFIRMATION);
+    // "Are you sure you wanna delete this?" pop-up.
+    public boolean confirmDelete() {
+        msg.setAlertType(Alert.AlertType.CONFIRMATION);
         msg.setTitle("Confirmation Dialog");
         msg.setContentText("Are you sure you want to delete?");
         Optional<ButtonType> result = msg.showAndWait();
-         if(result.isPresent() && result.get() == ButtonType.OK) {
-           return true;
-        }else{
-            return false;
-         }
+        return result.isPresent() && result.get() == ButtonType.OK;
     }
     
-    //Set the value of the taskList
+    // just a setter to update the task list.
     public void setTaskList(ArrayList<Task> taskList) {
         this.taskList = taskList;
     }
     
-      public boolean isDuplicateTask(String taskName, int ignoreIndex) {
-          for (int i = 0; i < taskList.size(); i++) {
-              if (i == ignoreIndex) continue;
-              Task task = taskList.get(i);
-              if (task.getTaskName().equalsIgnoreCase(taskName.trim())) {
-                  showErrorMessage("A task with this name already exists");
-                  return true;
-              }
-          }
-          return false;
-      }
-
-  
-    
+    /**
+     * Checks if a task with the same name already exists.
+     */
+    public boolean isDuplicateTask(String taskName, int ignoreIndex) {
+        for (int i = 0; i < taskList.size(); i++) {
+            if (i == ignoreIndex) continue; // skip the task we're currently editing
+            Task task = taskList.get(i);
+            if (task.getTaskName().equalsIgnoreCase(taskName.trim())) {
+                showErrorMessage("A task with this name already exists.");
+                return true;
+            }
+        }
+        return false;
+    }
 }

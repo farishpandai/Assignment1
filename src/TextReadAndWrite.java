@@ -1,104 +1,84 @@
-/**
- *
- * @author USER
- */
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-
+/**
+ * This class handles all the file i/o (input/output).
+ * it saves our tasks to a .txt file and loads them back.
+ */
 public class TextReadAndWrite {
-    private File f; // stores the current file being used
+    private File f; // the current file we're working with
 
-    // default constructor
-    public TextReadAndWrite()
-    {
-
+    public TextReadAndWrite() {
+        // default constructor, does nothing
     }
 
-    // checks if a file exists, creates it if it doesn't
-    // returns false if a new file was created, true if it already existed
-    public boolean checkForFile(String fileName)
-    {
-        this.f = new File(fileName+".txt");
-        try{
-            if (f.createNewFile()) {
-                // file didn't exist, so it was created
-                return false;
-            }
-            else{
-                // file already exists
-                System.out.println("File already Exist");
-                return true;
-            }
-        }
-        catch(IOException e)
-        {
-            // prints error if something goes wrong
-            System.out.println("an error has occured:"+e.getMessage());
-            return false;
-        }
-    }
-    
-    // writes a task's details to the file, appending to the end
-    public void writeToFile(Task task)
-    {
-        try{
-            FileWriter writeTo = new FileWriter(this.f,true); // open file in append mode
-            writeTo.write(task.getTaskName()+";");
-            writeTo.write(task.getCategory()+";");
-            writeTo.write(task.getDueDate()+";");
-            writeTo.write(task.getPriority()+";");
-            writeTo.write(task.isDone()+";");
-            writeTo.write(System.getProperty("line.separator"));
-            writeTo.close();
-        }
-        catch(IOException e)
-        {
-            // you could print an error here if needed note to those yng buat error exception
+    /**
+     * writes a single task to the file.
+     * the format is important: Type;Name;Category;DueDate;Priority;isDone
+     * we use semicolons ';' so it's easy to split the string later when we read it.
+  
+    */
+    public void writeToFile(Task task) {
+        try (FileWriter writeTo = new FileWriter(this.f, true)) { 
+            // Save the class name (e.g., "WorkTask") as the first item.
+            writeTo.write(task.getClass().getSimpleName() + ";"); 
+            writeTo.write(task.getTaskName() + ";");
+            writeTo.write(task.getCategory() + ";");
+            writeTo.write(task.getDueDate() + ";");
+            writeTo.write(task.getPriority() + ";");
+            writeTo.write(task.isDone() + ";");
+            writeTo.write(System.getProperty("line.separator")); // new line
+        } catch (IOException e) {
+            System.err.println("Error writing to file: " + e.getMessage());
         }
     }
 
-    // reads all lines from the file, splits each line by ';', and returns them as a list
-    public ArrayList<String[]> readFromSave()
-    {
+    /**
+     * reads all the tasks from the save file.
+     * return an arraylist where each element is a String array of a task's data.
+     */
+    public ArrayList<String[]> readFromSave() {
         ArrayList<String[]> allSplits = new ArrayList<>();
-        try {
-            Scanner scan = new Scanner(this.f);
+        if (f == null || !f.exists()) {
+            return allSplits; // just return an empty list if the file doesn't exist yet
+        }
+        // another try-with-resources for the scanner
+        try (Scanner scan = new Scanner(this.f)) { 
             while (scan.hasNextLine()) {
-                String test = scan.nextLine();
-                String[] testSplit = test.split(";");
-                allSplits.add(testSplit);
+                String line = scan.nextLine();
+                if (!line.trim().isEmpty()) { // make sure we don't read empty lines
+                    allSplits.add(line.split(";")); // split the line by ';' and add it to our list
+                }
             }
-            scan.close();
-        } catch(IOException e) {
-            // handle exception if needed
+        } catch (IOException e) {
+             System.err.println("Error reading from file: " + e.getMessage());
         }
         return allSplits;
     }
     
-    // sets the file to be used for reading/writing
+    // simple setter to tell the class which file to use.
     public void setFile(File file) {
         this.f = file;
     }
     
-    public void saveAllTasks(ArrayList<Task> tasks){
-        
-        try{
-        FileWriter clearFile = new FileWriter(this.f, false);
-        clearFile.close(); // file clears when close
-        
-        }catch(IOException e){
+    /**
+     * saves the entire list of tasks to the file.
+     * it completely overwrites the file, so we have the most up-to-date list.
+     */
+    public void saveAllTasks(ArrayList<Task> tasks) {
+        // first, clear the file by opening it in non-append mode and closing it.
+        try (FileWriter clearFile = new FileWriter(this.f, false)) {
+            // file is cleared. the empty try block is intentional.
+        } catch (IOException e) {
+             System.err.println("Error clearing file: " + e.getMessage());
         }
         
-        for(Task task: tasks){
+        
+        for (Task task : tasks) {
             writeToFile(task);
         }
-        
-        
     }
-
 }

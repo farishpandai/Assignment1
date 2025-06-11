@@ -1,26 +1,28 @@
-/**
- *
- * @author USER
- */
-
 import java.util.ArrayList;
+
+/**
+ * A simple class to handle searching through our list of tasks.
+ * it just filters the main list based on a search query from the user.
+ */
 public class TasksSearcher {
     
-    
-    // returns filtered list of tasks
+    /**
+     * the main search method.
+     */
     public ArrayList<Task> searchTasks(ArrayList<Task> allTasks, String searchQuery) {
         ArrayList<Task> filteredTasks = new ArrayList<>();
         
-        // If search is empty, return all tasks
+        // if search bar is empty, just return all the tasks
         if (searchQuery == null || searchQuery.trim().isEmpty()) {
-            return new ArrayList<>(allTasks); // Return copy of all tasks
+            return new ArrayList<>(allTasks); // return a copy, not the original list
         }
         
-        // Convert search query to lowercase for case-insensitive search
+        // convert to lowercase so the search isn't case-sensitive
         String query = searchQuery.toLowerCase().trim();
         
-        // Go through each task and check for matches
+        // loop through every task
         for (Task task : allTasks) {
+            // if the task matches our query, add it to the filtered list
             if (taskMatches(task, query)) {
                 filteredTasks.add(task);
             }
@@ -29,12 +31,15 @@ public class TasksSearcher {
         return filteredTasks;
     }
     
-    // Helper method to check if a task matches the search query
+    /**
+     * helper method that checks if a single task matches the search query.
+     * it checks all the important fields of the task.
+     */
     private boolean taskMatches(Task task, String query) {
-        // Check all fields of the task
+        // return true if the query is found in the name, category, due date, OR priority
         return task.getTaskName().toLowerCase().contains(query) ||
                task.getCategory().toLowerCase().contains(query) ||
-               task.getDueDate().toString().contains(query) ||
+               task.getDueDate().toString().contains(query) || // check date as a string
                task.getPriority().toLowerCase().contains(query);
     }
     
