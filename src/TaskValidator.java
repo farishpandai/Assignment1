@@ -1,16 +1,23 @@
+/**
+ *
+ * @author LENOVO
+ */
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Optional;
-
+import java.util.ArrayList;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Alert.AlertType;
 
 public class TaskValidator {
     private Alert msg;
+    private ArrayList<Task> taskList;
 
-    public TaskValidator() {
+    public TaskValidator(ArrayList<Task> taskList) {
         msg = new Alert(AlertType.NONE);
+        this.taskList = taskList;
+
     }
     
     //Show error message involved
@@ -36,22 +43,7 @@ public class TaskValidator {
 
     }
 
-    //Need to be added as without this if the date text box is empty the program simply wont work
-    public LocalDate dateValidate(String dateStr)
-    {
-        LocalDate date = LocalDate.parse("2000-02-02");
-        try{
-        date = LocalDate.parse(dateStr);
-        }
-        catch(DateTimeParseException e)
-        {
-             showErrorMessage("Invalid date format. Please use YYYY-MM-DD.");
-        }
-        return date;
-
-    }
-
-    //pop up showing successfull task added
+    //Pop up showing successful task added
      public void showSuccessMessage(String message) {
         
       
@@ -60,46 +52,75 @@ public class TaskValidator {
         msg.setContentText(message); 
         msg.show(); 
     }
-
-
-
-
-    public boolean validateTask(Task task)
+     
+    
+    public boolean validateTask(Task task, int ignoreIndex)
     {
-           
         try
         {
-            //Checks for error and throws an exception
             if (task.getTaskName().isEmpty()) 
             {
                 throw new IllegalArgumentException("Task cannot be empty");
             }
-            else if (task.getCategory().isEmpty()) 
+            if (isDuplicateTask(task.getTaskName(), ignoreIndex)) {
+                return false;
+            }
+            if (task.getCategory().isEmpty()) 
             {
-                throw new IllegalArgumentException("Category cannot be empty");
+                throw new IllegalArgumentException("You must choose the category");
             } 
-            else if (task.getDueDate().isBefore(LocalDate.now())) 
+            if (task.getDueDate()==null)
+                throw new IllegalArgumentException("You must choose the due date");
+            
+            if (task.getDueDate().isBefore(LocalDate.now())) 
             {
                 throw new IllegalArgumentException("The Date cannot be before the current date");
             } 
-            if ((!task.getPriority().equalsIgnoreCase("High"))&&!task.getPriority().equalsIgnoreCase("Medium")&&!task.getPriority().equalsIgnoreCase("Low"))
+            if (task.getPriority().isEmpty()) 
             {
-                throw new IllegalArgumentException("Valid Priority values can only be High,Medium or Low");
+                throw new IllegalArgumentException("You must choose the priority");
             }
             else {
-
                 return true;
-                
             }
-            
         }
-        //Catches the exception and display the appropriate error
         catch(IllegalArgumentException e)
         {
             showErrorMessage(e.getMessage());
             return false;
         }
     }
+    
+    //Pop up to confirm deletion
+    public boolean confirmDelete()
+    {
+        msg.setAlertType(AlertType.CONFIRMATION);
+        msg.setTitle("Confirmation Dialog");
+        msg.setContentText("Are you sure you want to delete?");
+        Optional<ButtonType> result = msg.showAndWait();
+         if(result.isPresent() && result.get() == ButtonType.OK) {
+           return true;
+        }else{
+            return false;
+         }
+    }
+    
+    //Set the value of the taskList
+    public void setTaskList(ArrayList<Task> taskList) {
+        this.taskList = taskList;
+    }
+    
+      public boolean isDuplicateTask(String taskName, int ignoreIndex) {
+          for (int i = 0; i < taskList.size(); i++) {
+              if (i == ignoreIndex) continue;
+              Task task = taskList.get(i);
+              if (task.getTaskName().equalsIgnoreCase(taskName.trim())) {
+                  showErrorMessage("A task with this name already exists");
+                  return true;
+              }
+          }
+          return false;
+      }
 
   
     

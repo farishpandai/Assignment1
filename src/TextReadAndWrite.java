@@ -1,3 +1,7 @@
+/**
+ *
+ * @author USER
+ */
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -33,18 +37,22 @@ public class TextReadAndWrite {
         }
         catch(IOException e)
         {
+            // prints error if something goes wrong
+            System.out.println("an error has occured:"+e.getMessage());
             return false;
         }
     }
     
+    // writes a task's details to the file, appending to the end
     public void writeToFile(Task task)
     {
         try{
-            FileWriter writeTo = new FileWriter(this.f,true);
+            FileWriter writeTo = new FileWriter(this.f,true); // open file in append mode
             writeTo.write(task.getTaskName()+";");
             writeTo.write(task.getCategory()+";");
             writeTo.write(task.getDueDate()+";");
             writeTo.write(task.getPriority()+";");
+            writeTo.write(task.isDone()+";");
             writeTo.write(System.getProperty("line.separator"));
             writeTo.close();
         }
@@ -75,6 +83,22 @@ public class TextReadAndWrite {
     // sets the file to be used for reading/writing
     public void setFile(File file) {
         this.f = file;
+    }
+    
+    public void saveAllTasks(ArrayList<Task> tasks){
+        
+        try{
+        FileWriter clearFile = new FileWriter(this.f, false);
+        clearFile.close(); // file clears when close
+        
+        }catch(IOException e){
+        }
+        
+        for(Task task: tasks){
+            writeToFile(task);
+        }
+        
+        
     }
 
 }

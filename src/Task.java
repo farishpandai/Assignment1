@@ -1,3 +1,7 @@
+/**
+ *
+ * @author USER
+ */
 import java.time.LocalDate;
 public class Task {
 
@@ -7,6 +11,7 @@ public class Task {
     private String category;
     private LocalDate dueDate;
     private String priority;
+    private boolean done;//wana buat
 
     //Constructor
     public Task()
@@ -15,14 +20,17 @@ public class Task {
         category="";
         dueDate=LocalDate.of(1, 1, 1);
         priority="";
+        done = false;//wana
+        
     }
     //Constructor with input Parameter
-    public Task(String taskName,String category,LocalDate dueDate,String priority)
+    public Task(String taskName,String category,LocalDate dueDate,String priority, boolean done)
     {
         this.taskName=taskName;
         this.category=category;
         this.dueDate=dueDate;
         this.priority=priority;
+        this.done = done;// wana buat
     }
 
     //Getters for all the variables
@@ -64,6 +72,14 @@ public class Task {
         this.priority=priority;
     }
     
+    public boolean isDone() { 
+        return done;
+    }
+    
+public void setDone(boolean done) { 
+    
+    this.done = done;
+}
     @Override
     //Formated toString
     public String toString()
