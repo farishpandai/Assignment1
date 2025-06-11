@@ -33,17 +33,14 @@ public class TextReadAndWrite {
         }
         catch(IOException e)
         {
-            // prints error if something goes wrong
-            System.out.println("an error has occured:"+e.getMessage());
             return false;
         }
     }
     
-    // writes a task's details to the file, appending to the end
     public void writeToFile(Task task)
     {
         try{
-            FileWriter writeTo = new FileWriter(this.f,true); // open file in append mode
+            FileWriter writeTo = new FileWriter(this.f,true);
             writeTo.write(task.getTaskName()+";");
             writeTo.write(task.getCategory()+";");
             writeTo.write(task.getDueDate()+";");
